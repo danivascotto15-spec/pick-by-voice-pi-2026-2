@@ -1,7 +1,7 @@
 import time
 import banco
 from tts import falar
-from stt import ouvir
+from stt import ouvir, numero_por_extenso_para_algarismos
 
 def iniciar_separacao_por_voz(numero_pedido, nome_colaborador):
     conexao = banco.conectar()
@@ -75,7 +75,7 @@ def iniciar_separacao_por_voz(numero_pedido, nome_colaborador):
                     falar(instrucao_item)
                     
                 # Verifica a confirmação (sinônimos) ou se ele disse a quantidade exata
-                elif any(palavra in resposta_lower for palavra in palavras_confirmar) or str(quantidade) in resposta_lower:
+                elif any(palavra in resposta_lower for palavra in palavras_confirmar) or numero_por_extenso_para_algarismos(resposta_lower) == quantidade:
                     falar("Item confirmado.")
                     confirmado = True
                     

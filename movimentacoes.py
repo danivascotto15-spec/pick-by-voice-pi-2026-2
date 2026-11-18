@@ -1,9 +1,10 @@
 import heapq
 import itertools
+import re
 import time
 
 import banco
-from stt import ouvir
+from stt import ouvir, numero_por_extenso_para_algarismos
 from tts import falar
 
 
@@ -350,6 +351,31 @@ def executar_picking_dinamico(numero_pedido, nome_colaborador, posicao_inicial=(
 
     palavras_repetir = ("repete", "repetir", "de novo", "novamente", "repita")
     palavras_confirmar = ("confirmar", "ok", "feito", "pronto", "certo", "concluído")
+    palavras_pausar = {"pausa", "pausar", "parar", "pare"}
+    palavras_retomar = {"continuar", "continue", "voltar", "retomar", "retome"}
+
+    def aguardar_retomada():
+        comunicar_operador(
+            "Ordem pausada e mantida em aberto. Diga continuar ou voltar para retomar."
+        )
+        while True:
+            resposta = ouvir()
+            if not resposta:
+                time.sleep(0.5)
+                continue
+
+            palavras = set(re.findall(r"\w+", resposta.lower()))
+            if palavras & palavras_retomar:
+                comunicar_operador("Retomando a separação.")
+                return
+            if palavras & palavras_pausar:
+                comunicar_operador(
+                    "A ordem continua pausada. Diga continuar ou voltar para retomar."
+                )
+            else:
+                comunicar_operador(
+                    "A ordem está pausada. Diga continuar ou voltar para retomar."
+                )
 
     def aguardar_confirmacao(instrucao, mensagem_erro, quantidade=None):
         comunicar_operador(instrucao)
@@ -359,14 +385,18 @@ def executar_picking_dinamico(numero_pedido, nome_colaborador, posicao_inicial=(
                 time.sleep(0.5)
                 continue
 
-            resposta = resposta.lower()
-            if any(palavra in resposta for palavra in palavras_repetir):
+            palavras = set(re.findall(r"\w+", resposta.lower()))
+            if palavras & palavras_pausar:
+                aguardar_retomada()
                 comunicar_operador(instrucao)
-            elif any(palavra in resposta for palavra in palavras_confirmar):
+            elif any(palavra in resposta.lower() for palavra in palavras_repetir):
+                comunicar_operador(instrucao)
+            elif any(palavra in resposta.lower() for palavra in palavras_confirmar):
                 return
-            elif quantidade is not None and str(quantidade) in resposta:
-                return
-            else:
+            elif quantidade is not None:
+                quantidade_falada = numero_por_extenso_para_algarismos(resposta)
+                if quantidade_falada == quantidade:
+                    return
                 comunicar_operador(mensagem_erro)
 
     comunicar_operador(
