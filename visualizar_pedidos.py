@@ -138,19 +138,24 @@ def abrir_tela_pedidos_colab(janela_pai, usuario):
     frame_tabela = ctk.CTkFrame(janela_pedidos, fg_color="transparent")
     frame_tabela.pack(fill="both", expand=True, padx=20, pady=10)
 
-    colunas = ("Ordem", "Data de Criação")
+    colunas = ("Ordem", "Status", "Data de Criação")
     tabela_abertos = ttk.Treeview(frame_tabela, columns=colunas, show="headings")
 
     for col in colunas:
         tabela_abertos.heading(col, text=col)
 
-    tabela_abertos.column("Ordem", width=150, anchor="center")
-    tabela_abertos.column("Data de Criação", width=350, anchor="center")
+    tabela_abertos.column("Ordem", width=100, anchor="center")
+    tabela_abertos.column("Status", width=150, anchor="center")
+    tabela_abertos.column("Data de Criação", width=300, anchor="center")
     tabela_abertos.pack(fill="both", expand=True)
 
     conn = banco.conectar()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, data_criacao FROM pedidos WHERE status = 'Aberto' ORDER BY id ASC")
+    cursor.execute(
+        "SELECT id, status, data_criacao "
+        "FROM pedidos WHERE status IN ('Aberto', 'Em Andamento', 'Pausado') "
+        "ORDER BY id ASC"
+    )
     for linha in cursor.fetchall():
         tabela_abertos.insert("", tk.END, values=linha)
     conn.close()

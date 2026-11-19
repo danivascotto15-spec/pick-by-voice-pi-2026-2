@@ -137,6 +137,7 @@ O nome de usuário deve ser gravado em minúsculas, pois o login converte o que 
 | `login.py` | Tela de autenticação e direcionamento por perfil |
 | `menu_admin.py` | Painel do administrador com menu lateral |
 | `menu_colaborador.py` | Painel do colaborador |
+| `logout.py` | Logout seguro, pausa de pedidos e consulta das sessões em andamento |
 | `produtos.py` | Cadastro de produtos e consulta de estoque |
 | `cadastrar_pedidos.py` | Criação de pedidos |
 | `visualizar_pedidos.py` | Lista de pedidos (admin) e seleção para separação (colaborador) |

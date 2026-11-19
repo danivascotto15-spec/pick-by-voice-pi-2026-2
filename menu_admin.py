@@ -5,6 +5,7 @@ import visualizar_pedidos
 import entrada_estoque
 import historico 
 import gerenciar_usuarios
+import logout
 
 def abrir_menu_admin(usuario):
     ctk.set_appearance_mode("dark")
@@ -105,9 +106,7 @@ def abrir_menu_admin(usuario):
     ctk.CTkButton(sidebar, text="GERENCIAR OPERADORES", height=40, **estilo, command=abrir_tela_usuarios).grid(row=8, column=0, padx=20, pady=10, sticky="ew")
 
     def fazer_logout():
-        janela.destroy()
-        import login
-        login.abrir_login()
+        logout.confirmar_saida(janela, usuario)
 
     ctk.CTkButton(sidebar, text="Sair / Trocar Usuário", fg_color="#444444", hover_color="#222222", command=fazer_logout).grid(row=11, column=0, padx=20, pady=(10, 20), sticky="ew")
     

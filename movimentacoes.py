@@ -284,12 +284,17 @@ def executar_picking_dinamico(numero_pedido, nome_colaborador, posicao_inicial=(
     conexao = banco.conectar()
     try:
         cursor = conexao.cursor()
+        cursor.execute(
+            "UPDATE pedidos SET status = 'Em Andamento', colaborador = ? WHERE id = ?",
+            (nome_colaborador, numero_pedido),
+        )
+        conexao.commit()
         cursor.execute("""
             SELECT i.id, prod.id, prod.nome, i.quantidade,
                    prod.corredor, prod.prateleira, prod.lugar
             FROM itens_pedido i
             JOIN produtos prod ON prod.id = i.produto_id
-            WHERE i.pedido_id = ?
+            WHERE i.pedido_id = ? AND i.qtd_conferida = 0
         """, (numero_pedido,))
         linhas = cursor.fetchall()
     finally:
@@ -398,6 +403,15 @@ def executar_picking_dinamico(numero_pedido, nome_colaborador, posicao_inicial=(
                 if quantidade_falada == quantidade:
                     return
                 comunicar_operador(mensagem_erro)
+            else:
+                comunicar_operador(mensagem_erro)
+
+    def executar_movimentacoes(instrucoes):
+        for instrucao in instrucoes:
+            aguardar_confirmacao(
+                instrucao,
+                "Não entendi. Diga confirmar ou pronto para continuar.",
+            )
 
     comunicar_operador(
         f"Iniciando a ordem {numero_pedido} com {len(rota)} itens. Calculando a rota otimizada."
@@ -412,13 +426,7 @@ def executar_picking_dinamico(numero_pedido, nome_colaborador, posicao_inicial=(
             f"Item {index} de {len(rota)}: corredor {item['loc']['corredor']}, "
             f"prateleira {item['loc']['prateleira']}, posição {item['loc']['lugar']}."
         )
-        for comando in instrucoes:
-            comunicar_operador(comando)
-
-        aguardar_confirmacao(
-            "Diga pronto quando chegar ao local ou diga repetir para ouvir novamente.",
-            "Não entendi. Diga pronto ao chegar ou repetir.",
-        )
+        executar_movimentacoes(instrucoes)
 
         instrucao_item = f"Separe {item['quantidade']} unidades do produto {item['nome']}."
         aguardar_confirmacao(

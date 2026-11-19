@@ -34,30 +34,30 @@ def iniciar_separacao_por_voz(numero_pedido, nome_colaborador):
         prateleira = item[3] if item[3] else "não definida"
         lugar = item[4] if item[4] else "não definido"
         
-        # --- PASSO 1: LOCALIZAÇÃO ---
-        instrucao_local = f"Ir para Corredor {corredor}, Prateleira {prateleira}, Posição {lugar}."
-        falar(instrucao_local)
-        
-        confirmado = False
-        while not confirmado:
-            resposta = ouvir()
-            
-            if resposta:
-                resposta_lower = resposta.lower()
-                
-                # Verifica se o operador pediu para repetir
-                if any(palavra in resposta_lower for palavra in palavras_repetir):
-                    falar(instrucao_local)
-                
-                # Verifica se o operador confirmou com qualquer um dos sinônimos
-                elif any(palavra in resposta_lower for palavra in palavras_confirmar):
-                    confirmado = True
-                    
-                # Caso diga algo irreconhecível
+        # --- PASSO 1: LOCALIZAÇÃO EM MOVIMENTAÇÕES SEQUENCIAIS ---
+        instrucoes_local = [
+            f"Ir para o Corredor {corredor}.",
+            f"Vá até a Prateleira {prateleira}.",
+            f"Chegue à Posição {lugar}.",
+        ]
+
+        for instrucao_local in instrucoes_local:
+            confirmado = False
+            falar(instrucao_local)
+            while not confirmado:
+                resposta = ouvir()
+
+                if resposta:
+                    resposta_lower = resposta.lower()
+
+                    if any(palavra in resposta_lower for palavra in palavras_repetir):
+                        falar(instrucao_local)
+                    elif any(palavra in resposta_lower for palavra in palavras_confirmar):
+                        confirmado = True
+                    else:
+                        falar("Diga 'pronto' após concluir esta movimentação, ou 'repetir'.")
                 else:
-                    falar("Diga 'pronto' quando chegar, ou 'repetir' para ouvir de novo.")
-            else:
-                time.sleep(0.5)
+                    time.sleep(0.5)
 
         # --- PASSO 2: ITEM E QUANTIDADE ---
         instrucao_item = f"Separar {quantidade} unidades do item {nome_produto}."

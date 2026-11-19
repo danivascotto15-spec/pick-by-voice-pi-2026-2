@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import visualizar_pedidos
+import logout
 
 def abrir_menu_colab(usuario):
     janela_menu = ctk.CTk()
@@ -36,9 +37,7 @@ def abrir_menu_colab(usuario):
     
     # --- NOVA FUNÇÃO PARA TROCAR USUÁRIO ---
     def fazer_logout():
-        janela_menu.destroy() # Fecha a tela do colaborador
-        import login
-        login.abrir_login() # Abre a tela de login novamente
+        logout.confirmar_saida(janela_menu, usuario)
 
     # Botão atualizado para fazer o logout e voltar ao login
     ctk.CTkButton(

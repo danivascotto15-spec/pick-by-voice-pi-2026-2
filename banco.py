@@ -12,6 +12,8 @@ def criar_tabelas():
     cursor.execute('''CREATE TABLE IF NOT EXISTS produtos (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, quantidade INTEGER NOT NULL, qtd_minima INTEGER NOT NULL, preco REAL NOT NULL)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS pedidos (id INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT NOT NULL DEFAULT 'Aberto', data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS itens_pedido (id INTEGER PRIMARY KEY AUTOINCREMENT, pedido_id INTEGER NOT NULL, produto_id INTEGER NOT NULL, quantidade INTEGER NOT NULL, FOREIGN KEY (pedido_id) REFERENCES pedidos (id), FOREIGN KEY (produto_id) REFERENCES produtos (id))''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS sessao_operacao (id INTEGER PRIMARY KEY AUTOINCREMENT, pedido_id INTEGER, colaborador TEXT, status TEXT NOT NULL, ultimo_item_id INTEGER, data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS historico_logout (id INTEGER PRIMARY KEY AUTOINCREMENT, pedido_id INTEGER, colaborador TEXT, acao TEXT, data_logout TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     
     # ---------------------------------------------------------
     # 1. ATUALIZAÇÕES DA TABELA DE PEDIDOS (Ordens de Saída)
@@ -110,6 +112,10 @@ def concluir_pedido_e_atualizar_estoque(pedido_id, nome_colaborador="Não Inform
     cursor = conn.cursor()
     try:
         cursor.execute("UPDATE pedidos SET status = 'Concluído', data_conclusao = datetime('now', 'localtime'), colaborador = ? WHERE id = ?", (nome_colaborador, pedido_id))
+        cursor.execute(
+            "UPDATE sessao_operacao SET status = 'Concluído', ultimo_item_id = NULL, data_atualizacao = datetime('now', 'localtime') WHERE pedido_id = ?",
+            (pedido_id,),
+        )
         
         cursor.execute("SELECT produto_id, quantidade FROM itens_pedido WHERE pedido_id = ?", (pedido_id,))
         itens = cursor.fetchall()
